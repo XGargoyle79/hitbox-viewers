@@ -7,9 +7,10 @@ Original data analysis, reverse engineering, and LUA script by XGargoyle.
 AI assistance has been used for optimizing the LUA script.
 URL: https://github.com/XGargoyle79/hitbox-viewers/
 
-Last updated: 20261119
+Last updated: 20261124
 ------------------------------------------------------------------------------------
 --]]
+
 --[[
 ------------------------------------------------------------------------------------
 KNOWN ISSUES:
@@ -18,9 +19,10 @@ KNOWN ISSUES:
 --]]
 
 
-local cam_x_addr = cam_x_addr or 0x109792
-local cam_y_addr = cam_y_addr or 0x109798
-local floor_y    = floor_y or 216 -- Base ground Y level in 224px screen space
+local cam_x_addr = cam_x_addr or 0x109792 
+local cam_y_addr = cam_y_addr or 0x109798 
+local floor_y    = floor_y or 216  -- Base ground Y level in 224px screen space
+
 local axis_size  = 5
 
 -- Adjust the frame delay (0, 1, 2, 3...) until drawn boxes align with the rendered sprites
@@ -155,8 +157,8 @@ local function capture_state()
 
     local P1_teamside = memory.readbyte(0x109ABE)
     local P2_teamside = memory.readbyte(0x109BBE)
-    local P1_facing   = (P1_teamside == 0) and -1 or 1
-    local P2_facing   = (P2_teamside == 0) and -1 or 1
+    local P1_facing   = (P1_teamside == 0) and 1 or -1
+    local P2_facing   = (P2_teamside == 0) and 1 or -1
 
     local cam_x = memory.readword(cam_x_addr) or 0
     local cam_y = read_i16(cam_y_addr) or 0
@@ -204,11 +206,10 @@ end
 local function draw_snapshot_boxes(box_list, screen_x, screen_y, facing, zoom_x)
     local scale = 2
     for _, box in ipairs(box_list) do
-        local right  = screen_x - scale * (facing * box.x0) * zoom_x
-        local left   = right - scale * (facing * box.x_growth) * zoom_x
-        local top    = screen_y - scale * box.y0 * zoom_x
+        local left   = screen_x + scale * (facing * box.x0) * zoom_x
+        local top    = screen_y - scale *box.y0 * zoom_x
+        local right  = left + scale * (facing * box.x_growth) * zoom_x
         local bottom = top + scale * box.y_growth * zoom_x
-
         gui.box(left, top, right, bottom, box.fill, box.line)
     end
 end
@@ -222,11 +223,11 @@ local function draw_snapshot_projs(projs, facing, zoom_x)
         gui.line(screen_x - axis_size, screen_y, screen_x + axis_size, screen_y, colors.axis_color)
         gui.line(screen_x, screen_y - axis_size, screen_x, screen_y + axis_size, colors.axis_color)
 
-        local right  = screen_x - scale * (facing * proj.x0) * zoom_x
-        local left   = right - scale * (facing * proj.x_growth) * zoom_x
+        local left   = screen_x + scale * (facing * proj.x0) * zoom_x
         local top    = screen_y - scale * proj.y0 * zoom_x
+        local right  = left + scale * (facing * proj.x_growth) * zoom_x
         local bottom = top + scale * proj.y_growth * zoom_x
-
+        
         gui.box(left, top, right, bottom, proj.fill, proj.line)
     end
 end

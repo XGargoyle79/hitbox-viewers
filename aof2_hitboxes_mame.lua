@@ -7,7 +7,7 @@ Original data analysis, reverse engineering, and LUA script by XGargoyle.
 AI assistance has been used for optimizing the LUA script.
 URL: https://github.com/XGargoyle79/hitbox-viewers/
 
-Last updated: 20261119
+Last updated: 20261124
 ------------------------------------------------------------------------------------
 --]]
 
@@ -152,8 +152,8 @@ local function capture_state()
 
     local P1_teamside = space:read_u8(0x109ABE)
     local P2_teamside = space:read_u8(0x109BBE)
-    local P1_facing   = (P1_teamside == 0) and -1 or 1
-    local P2_facing   = (P2_teamside == 0) and -1 or 1
+    local P1_facing   = (P1_teamside == 0) and 1 or -1
+    local P2_facing   = (P2_teamside == 0) and 1 or -1
 
     local cam_x = space:read_u16(cam_x_addr) or 0
     local cam_y = space:read_i16(cam_y_addr) or 0
@@ -201,11 +201,10 @@ end
 local function draw_snapshot_boxes(screen, box_list, screen_x, screen_y, facing, zoom_x)
     local scale = 2
     for _, box in ipairs(box_list) do
-        local right  = screen_x - scale * (facing * box.x0) * zoom_x
-        local left   = right - scale * (facing * box.x_growth) * zoom_x
-        local top    = screen_y - scale * box.y0 * zoom_x
+        local left   = screen_x + scale * (facing * box.x0) * zoom_x
+        local top    = screen_y - scale *box.y0 * zoom_x
+        local right  = left + scale * (facing * box.x_growth) * zoom_x
         local bottom = top + scale * box.y_growth * zoom_x
-
         screen:draw_box(left, top, right, bottom, box.line, box.fill)
     end
 end
@@ -219,11 +218,11 @@ local function draw_snapshot_projs(screen, projs, facing, zoom_x)
         screen:draw_line(screen_x - axis_size, screen_y, screen_x + axis_size, screen_y, colors.axis_color)
         screen:draw_line(screen_x, screen_y - axis_size, screen_x, screen_y + axis_size, colors.axis_color)
 
-        local right  = screen_x - scale * (facing * proj.x0) * zoom_x
-        local left   = right - scale * (facing * proj.x_growth) * zoom_x
+        local left   = screen_x + scale * (facing * proj.x0) * zoom_x
         local top    = screen_y - scale * proj.y0 * zoom_x
+        local right  = left + scale * (facing * proj.x_growth) * zoom_x
         local bottom = top + scale * proj.y_growth * zoom_x
-
+        
         screen:draw_box(left, top, right, bottom, proj.line, proj.fill)
     end
 end
